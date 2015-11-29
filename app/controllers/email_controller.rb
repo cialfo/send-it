@@ -16,77 +16,36 @@ class EmailController < ApplicationController
     csv_file = s_params[:csv_file].tempfile
     subject = subject.blank? ? nil : subject
 
-    col_tags = []
-    col_values = []
-
-    CSV.foreach(csv_file).each do |row|
-      if col_tags.length > 0
-        col_values.push(*row)
-      else
-        col_tags.push(*row)
-      end
-    end
-
-    render :text => "success" and return
-
-    mail_result = "Default Result"
-    user_count = 0
-    mail_sent_count = 0
+    users = []
+    columns = []
 
     if template_id.empty?
       render :text => "error|Template Id is missing. Please get the template id from Mandrill" and return
     end
 
-    global_vars = []
-    global_tag_names = params["data"]["global-tag-names"]
-    if !global_tag_names.blank?
-      g_names = global_tag_names.split(",")
-      g_values = params["data"]["global-tag-values"].split(",")
-
-      total_tags = g_names.length
-
-      for i in 0..total_tags - 1
-        var = {g_names[i] => g_values[i]}
-        global_vars << var
+    CSV.foreach(csv_file).each do |row|
+      if columns.length > 0
+        users << row
+      else
+        columns.push(*row)
       end
     end
 
-    api_params = {}
-    api_params[:token] = "#{session[:token]}"
+    users.each do |user|
+      to_ids = []
+      user_vars = []
 
-    mode = params["data"]["mode"]
-    if mode == "test"
-      api_params["emails"] = params["data"]["test_email_ids"]
-      res = send_http_request_using_rest_client("users/get_users_by_email", "POST", api_params)
-    else
-      res = send_http_request_using_rest_client("users/get_all_users", "POST", api_params)
-    end
+      to = {:email => user[0], :type => "to"}
+      to_ids << to
 
-    if @valid_response
-      user_count = res["user_count"]
-      users = res["data"]["users"]
-
-      users.each do |user|
-
-        to_ids = []
-        user_vars = []
-
-        to = {:email => user["email"], :name => user["first_name"], :type => "to"}
-        to_ids << to
-
-        vars = []
-        SUPPORTED_USER_TAGS.each do |utag|
-          vars << {:name => utag[:tag] , :content => user[utag[:value]]}
-        end
-        user_vars << {:rcpt => user["email"], :vars => vars}
-
-        send_count = SendMail template_id, to_ids, subject, global_vars, user_vars
-        mail_sent_count += send_count
+      vars = []
+      for i in 1...columns.length
+        vars << {:name => columns[i] , :content => user[i]}
       end
+      user_vars << {:rcpt => user[0], :vars => vars}
 
-      render :text => "Total Users = #{user_count}. Mail sent to = #{mail_sent_count}."
-    else
-      render :text => "API Error. Check server logs for more details"
+      send_count = SendMail template_id, to_ids, subject, nil, user_vars
+      mail_sent_count += send_count
     end
 
   end
@@ -99,7 +58,12 @@ class EmailController < ApplicationController
 
   def SendMail(template_id, to_ids, subject, global_vars, user_vars)
 
+    #read conifugration
     api_key = Rails.application.config.action_mailer.smtp_settings[:password]
+    from_email = Rails.application.config.mandrill_settings[:from_email]
+    from_name = Rails.application.config.mandrill_settings[:from_name]
+    reply_to = Rails.application.config.mandrill_settings[:reply_to]
+
     mandrill = Mandrill::API.new api_key
     count = 0
 
@@ -108,10 +72,10 @@ class EmailController < ApplicationController
       template_content = [{"name" => "example name", "content" => "example content"}]
       message = {
           "subject"=> subject,
-          "from_email" => "hello@sitforsat.com",
-          "from_name" => "SitforSAT Team",
+          "from_email" => from_email,
+          "from_name" => from_name,
           "to" => to_ids,
-          "headers" => {"Reply-To" => "hello@sitforsat.com"},
+          "headers" => {"Reply-To" => reply_to},
           "important" => false,
           "track_opens" => true,
           "track_clicks" => true,
