@@ -1,5 +1,5 @@
 require 'csv'
-
+require 'mandrill'
 class EmailController < ApplicationController
 
   SUPPORTED_USER_TAGS = %w(FNAME LNAME EMAIL)
@@ -10,6 +10,7 @@ class EmailController < ApplicationController
 
   def send_mail
 
+    mail_sent_count = 0
     s_params = send_mail_params
     template_id = s_params[:template_id]
     subject = s_params[:subject]
@@ -48,6 +49,7 @@ class EmailController < ApplicationController
       mail_sent_count += send_count
     end
 
+    render :text => "#{mail_sent_count} Mails Sent"
   end
 
   private
@@ -59,7 +61,7 @@ class EmailController < ApplicationController
   def SendMail(template_id, to_ids, subject, global_vars, user_vars)
 
     #read conifugration
-    api_key = Rails.application.config.action_mailer.smtp_settings[:password]
+    api_key = Rails.application.config.mandrill_settings[:api_key]
     from_email = Rails.application.config.mandrill_settings[:from_email]
     from_name = Rails.application.config.mandrill_settings[:from_name]
     reply_to = Rails.application.config.mandrill_settings[:reply_to]
