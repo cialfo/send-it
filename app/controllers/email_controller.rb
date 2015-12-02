@@ -74,8 +74,8 @@ class EmailController < ApplicationController
       template_content = [{"name" => "example name", "content" => "example content"}]
       message = {
           "subject"=> subject,
-          "from_email" => from_email,
-          "from_name" => from_name,
+          "from_email" => "taher435@gmail.com",
+          "from_name" => "Mariya Dhilawala",
           "to" => to_ids,
           "headers" => {"Reply-To" => reply_to},
           "important" => false,

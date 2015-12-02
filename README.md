@@ -23,3 +23,5 @@ You can get **api_key** from your mandrill account. Also, make sure you configur
 3. Background notify via email once all emails are sent (useful when sending 1000s of emails)
 4. Write unit tests
 5. Clean up code
+6. Support attachments
+7. Support tracking (Google analytics)

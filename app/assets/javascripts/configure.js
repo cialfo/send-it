@@ -4,7 +4,7 @@ configureApp.controller("configureController", ['$scope', function($scope){
     $scope.firstColumn = "";
 
     $scope.isFormInvalid = function(){
-        return frmConfigure.$invalid || $scope.firstColNotValid();
+        return $scope.frmConfigure.$invalid || $scope.firstColNotValid();
     };
     $scope.firstColNotValid = function(){
         return $scope.firstColumn != "" && $scope.firstColumn.toLowerCase() != "email"
