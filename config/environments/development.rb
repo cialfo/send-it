@@ -5,6 +5,7 @@ Rails.application.configure do
   # every request. This slows down response time but is perfect for development
   # since you don't have to restart the web server when you make code changes.
   config.cache_classes = false
+  #config.allow_concurrency=true
 
   # Do not eager load code on boot.
   config.eager_load = false
@@ -39,8 +40,10 @@ Rails.application.configure do
   # Raises error for missing translations
   # config.action_view.raise_on_missing_translations = true
 
+  config.cache_store = :memory_store
+
   config.mandrill_settings = {
-      :api_key => "ukqZrWvF9LTrEU73l8mi5Q",
+      :api_key => "81Blzhrd5OzITcboq55OwQ", # "ukqZrWvF9LTrEU73l8mi5Q",
       :from_email => "info@cialfo.com.sg",
       :reply_to => "info@cialfo.com.sg",
       :from_name => "CIALFO Education",

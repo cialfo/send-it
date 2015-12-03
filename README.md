@@ -18,7 +18,7 @@ You can get **api_key** from your mandrill account. Also, make sure you configur
 
 ####To Do
 
-1. Proper validations on page
+1. ~~Proper validations on page~~
 2. Asynchronous update on page while sending email in background
 3. Background notify via email once all emails are sent (useful when sending 1000s of emails)
 4. Write unit tests

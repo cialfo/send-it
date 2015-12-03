@@ -57,4 +57,5 @@ Rails.application.routes.draw do
   root 'email#configure'
 
   post 'email/send' => 'email#send_mail'
+
 end

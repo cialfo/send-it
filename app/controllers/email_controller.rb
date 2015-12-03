@@ -1,27 +1,33 @@
+require 'json'
 require 'csv'
 require 'mandrill'
 class EmailController < ApplicationController
 
-  SUPPORTED_USER_TAGS = %w(FNAME LNAME EMAIL)
+  #skip_before_filter :verify_authenticity_token
 
   def configure
-    @supported_tags = SUPPORTED_USER_TAGS.join(", ")
+
   end
 
   def send_mail
-
     mail_sent_count = 0
     s_params = send_mail_params
-    template_id = s_params[:template_id]
-    subject = s_params[:subject]
+
     csv_file = s_params[:csv_file].tempfile
-    subject = subject.blank? ? nil : subject
+    data_params = JSON.parse(s_params["data"])
+
+    from_name = data_params["from_name"]
+    from_email = data_params["from_email"]
+    template_id = data_params["template_id"]
+    subject = data_params["subject"]
 
     users = []
     columns = []
 
-    if template_id.empty?
-      render :text => "error|Template Id is missing. Please get the template id from Mandrill" and return
+    if from_email.blank?
+      render :json => {:status => "Failed", :reason => "From Email id is blank"} and return
+    elsif template_id.blank?
+      render :json => {:status => "Failed", :reason => "Template Id is missing. Please get the template id from Mandrill"} and return
     end
 
     CSV.foreach(csv_file).each do |row|
@@ -31,6 +37,8 @@ class EmailController < ApplicationController
         columns.push(*row)
       end
     end
+
+    #Rails.cache.write("total", users.length)
 
     users.each do |user|
       to_ids = []
@@ -45,37 +53,45 @@ class EmailController < ApplicationController
       end
       user_vars << {:rcpt => user[0], :vars => vars}
 
-      send_count = SendMail template_id, to_ids, subject, nil, user_vars
+      send_count = SendMail(from_name, from_email, subject, to_ids, template_id, nil, user_vars)
+
+      mail_sent_count = Rails.cache.fetch("sent") {0}
       mail_sent_count += send_count
+
+      #Rails.cache.write("sent", mail_sent_count)
+
     end
 
     render :text => "#{mail_sent_count} Mails Sent"
   end
 
+  # def get_progress
+  #   total_count = Rails.cache.fetch("total")
+  #   sent_count = Rails.cache.fetch("sent")
+  #   render :json => {:total => total_count, :sent => sent_count}
+  # end
+
   private
 
   def send_mail_params
-    params.permit(:template_id, :subject, :csv_file)
+    params.permit(:csv_file, :data)
   end
 
-  def SendMail(template_id, to_ids, subject, global_vars, user_vars)
+  def SendMail(from_name, from_email, subject, to_ids, template_id, global_vars, user_vars)
 
-    #read conifugration
     api_key = Rails.application.config.mandrill_settings[:api_key]
-    from_email = Rails.application.config.mandrill_settings[:from_email]
-    from_name = Rails.application.config.mandrill_settings[:from_name]
-    reply_to = Rails.application.config.mandrill_settings[:reply_to]
+    reply_to = from_email #TODO: Add another field in UI to give a different reply-to email id
 
     mandrill = Mandrill::API.new api_key
     count = 0
 
     begin
       template_id = template_id
-      template_content = [{"name" => "example name", "content" => "example content"}]
+      template_content = [{"name" => "example name", "content" => "example content"}] #since we are using mailchimp template, this can have dummy values. Not used actually
       message = {
           "subject"=> subject,
-          "from_email" => "taher435@gmail.com",
-          "from_name" => "Mariya Dhilawala",
+          "from_email" => from_email,
+          "from_name" => from_name,
           "to" => to_ids,
           "headers" => {"Reply-To" => reply_to},
           "important" => false,
@@ -111,9 +127,6 @@ class EmailController < ApplicationController
       }
 
       async = false
-      # ip_pool = "Main Pool"
-      # send_at = nil
-
       result = mandrill.messages.send_template template_id, template_content, message, async
 
       count += 1

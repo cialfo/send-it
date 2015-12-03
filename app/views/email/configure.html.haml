@@ -4,43 +4,55 @@
 - content_for :page_js do
   = javascript_include_tag "notify", "configure"
 
-.form-group{"ng-app" => "configureApp", "ng-controller" => "configureController"}
-  %form{:enctype => "multipart/form-data", :method => "post", action: "/email/send", name: "frmConfigure", id:"frmConfigure", novalidate: true}
-    %input{type: "hidden", name: "authenticity_token", value: "#{form_authenticity_token}"}
-    .control-group
-      %label.control-label{for: "csv_file"} CSV
-      .controls
-        %input.form-control{type: "file", name: "csv_file", id: "csvFile", required: true, "fileread" => "csvFile", accept: ".csv"}
-    .control-group
-      %label.control-label CSV Columns
-      .controls
-        %ul{"ng-if" => "csvCols.length > 0"}
-          %li{"ng-repeat" => "column in csvCols"}
-            {{column}}
-        %span{"ng-if" => "firstColNotValid()"}
-          First column in not Email
-
-        %span{"ng-if" => "csvCols.length == 0"}
-          Please upload a CSV File
-    .control-group
-      %label.control-label{for: "templateId"} Template Id
-      .controls
-        %input.form-control{type: "text", name: "template_id", id: "templateId", required: true, "ng-model" => "templateId"}
-    .control-group
-      %label.control-label{for: "fromEmail"} From Email
-      .controls
-        %input.form-control{type: "text", name: "from_email", id: "fromEmail", required: true, "ng-model" => "fromEmail"}
-    .control-group
-      %label.control-label{for: "fromName"} From Name
-      .controls
-        %input.form-control{type: "text", name: "from_name", id: "fromName", "ng-model" => "fromName"}
-    .control-group
-      %label.control-label{for: "subject"} Subject
-      .controls
-        %input.form-control{type: "text", name: "subject", id: "subject", required: true, "ng-model" => "subject"}
-    .control-group
-      %label.control-label Things to Note:
-      .controls
+.container{"ng-app" => "configureApp", "ng-controller" => "configureController"}
+  .row
+    .col-md-12.cols-xs-12
+      %h2.title
+        Mailchimp + Mandrill =
+        %img.troll{src: "/assets/troll.png"}
+  .row
+    .col-md-6.col-xs-12
+      %form.form-group{name: "frmConfigure", id:"frmConfigure", novalidate: true, "ng-submit" => "submitForm('#{form_authenticity_token}')"}
+        .control-group
+          %label.control-label.required{for: "fromEmail"} From Email
+          .controls
+            %input.form-control{type: "email", name: "from_email", id: "fromEmail", required: true, email: true, "ng-model" => "modelObject.fromEmail", placeholder: "Sender's email address"}
+        .control-group
+          %label.control-label{for: "fromName"} From Name (optional)
+          .controls
+            %input.form-control{type: "text", name: "from_name", id: "fromName", "ng-model" => "modelObject.fromName", placeholder: "Name you want to appear in receiver's inbox"}
+        .control-group
+          %label.control-label.required{for: "subject"} Subject
+          .controls
+            %input.form-control{type: "text", name: "subject", id: "subject", required: true, "ng-model" => "modelObject.subject", placeholder: "Your email subject"}
+        .control-group
+          %label.control-label.required{for: "csv_file"} CSV File
+          .controls
+            %input.form-control{type: "file", name: "csv_file", id: "csvFile", required: true, "fileread" => "modelObject.csvFile", accept: ".csv"}
+        .control-group
+          %label.control-label CSV Columns
+          %span.error{"ng-if" => "firstColNotValid()"}
+            First column in not Email
+          .controls
+            {{csvCols.join(", ")}}
+            %span{"ng-if" => "csvCols.length == 0"}
+              Please upload a CSV File
+        .control-group
+          %label.control-label.required{for: "templateId"} Template Id
+          .controls
+            %input.form-control{type: "text", name: "template_id", id: "templateId", required: true, "ng-model" => "modelObject.templateId"}
+        .control-group
+          %label
+            %input{type: "checkbox", "ng-model" => "notify"}
+            Notify me once its done.
+          %input.form-control{type: "email", "ng-model" => "modelObject.notifyEmail", name: "notify_email", "ng-show" => "notify", placeholder: "Your email address"}
+        .control-group
+          .controls
+            %button.btn.btn-info{type: "submit", "ng-disabled" => "isFormInvalid()"}
+              Send It
+              %span.glyphicon.glyphicon-send
+    .col-md-6.col-xs-12.note-card
+      %h4 Things to Note
       .alert.alert-info
         %ul
           %li
@@ -55,15 +67,13 @@
             will be used as
             %b
               tags
-            to replace values in the template. For example,
+            to replace values in the mailchimp template. For example,
             %b
               "LNAME"
             column will be used to replace
             %b
               *|LNAME|*
-            tag in the template
-    .control-group
-      .controls
-        %button.btn.btn-info{type: "submit", "ng-disabled" => "isFormInvalid()"}
-          Send It
-          %span.glyphicon.glyphicon-send
+            tag in the mailchimp template
+      %h4 Powered By
+      %a{href: "http://cialfogroup.com"}
+        %img.cialfo-logo{src: "http://cialfogroup.com/assets/cialfo-logo-new-hz.png", title: "CIALFO", target: "_blank"}
