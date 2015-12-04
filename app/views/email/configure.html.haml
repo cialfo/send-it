@@ -29,14 +29,8 @@
           %label.control-label.required{for: "csv_file"} CSV File
           .controls
             %input.form-control{type: "file", name: "csv_file", id: "csvFile", required: true, "fileread" => "modelObject.csvFile", accept: ".csv"}
-        .control-group
-          %label.control-label CSV Columns
-          %span.error{"ng-if" => "firstColNotValid()"}
-            First column in not Email
-          .controls
-            {{csvCols.join(", ")}}
-            %span{"ng-if" => "csvCols.length == 0"}
-              Please upload a CSV File
+            %span.error{"ng-if" => "firstColNotValid()"}
+              First column in not Email
         .control-group
           %label.control-label.required{for: "templateId"} Template Id
           .controls
@@ -77,3 +71,36 @@
       %h4 Powered By
       %a{href: "http://cialfogroup.com"}
         %img.cialfo-logo{src: "http://cialfogroup.com/assets/cialfo-logo-new-hz.png", title: "CIALFO", target: "_blank"}
+  .modal.fade#processingModal{"tab-index" => "-1", role: "dialog"}
+    .modal-dialogue
+      .modal-content
+        .modal-body
+          .in-progress{"ng-if" => "inProgress"}
+            %h5
+              Sit back and relax and drink some &#9749;while we send all the emails for you.
+            .sending-container
+              .box
+                .border.one
+                .border.two
+                .border.three
+                .border.four
+                .line.one
+                .line.two
+                .line.three
+            %h5.blue
+              Sending
+            .notify-row
+              %span{"ng-show" => "notify && modelObject.notifyEmail != ''"} You will be notified at {{modelObject.notifyEmail}} ones all emails are sent.
+              %form.form-group{name: "frmNotifyMe", "ng-show" => "!notify || modelObject.notifyEmail == ''"}
+                %h6 We can notify you via email once all emails are sent
+                .input-group
+                  %input.form-control{type: "email", name: "notifyEmail", placeholder: "Your email id", "ng-model" => "modelObject.notifyEmail", required: true, email: true}
+                  %span.input-group-btn
+                    %button.btn.btn-info{type: "button", "ng-click" => "updateNotify()", "ng-disabled" => "frmNotifyMe.notifyEmail.$invalid"} Notify Me
+          .completed{"ng-if" => "!inProgress"}
+            %h2.green
+              All Done!
+            %h3.green
+              {{emailSentCount}} Emails Sent
+            %div
+              %button.btn.btn-default{"data-dismiss" => "modal"} Close

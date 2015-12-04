@@ -58,4 +58,10 @@ Rails.application.routes.draw do
 
   post 'email/send' => 'email#send_mail'
 
+  resources :email do
+    collection do
+      post 'update_notify'
+    end
+  end
+
 end

@@ -43,7 +43,7 @@ Rails.application.configure do
   config.cache_store = :memory_store
 
   config.mandrill_settings = {
-      :api_key => "81Blzhrd5OzITcboq55OwQ", # "ukqZrWvF9LTrEU73l8mi5Q",
+      :api_key => "ukqZrWvF9LTrEU73l8mi5Q", # "ukqZrWvF9LTrEU73l8mi5Q",
       :from_email => "info@cialfo.com.sg",
       :reply_to => "info@cialfo.com.sg",
       :from_name => "CIALFO Education",

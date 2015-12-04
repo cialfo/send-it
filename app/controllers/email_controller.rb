@@ -5,6 +5,8 @@ class EmailController < ApplicationController
 
   #skip_before_filter :verify_authenticity_token
 
+  MANDRILL_API_KEY = Rails.application.config.mandrill_settings[:api_key]
+
   def configure
 
   end
@@ -20,6 +22,7 @@ class EmailController < ApplicationController
     from_email = data_params["from_email"]
     template_id = data_params["template_id"]
     subject = data_params["subject"]
+    session[:notify_email] = data_params["notify_email"]
 
     users = []
     columns = []
@@ -39,10 +42,10 @@ class EmailController < ApplicationController
     end
 
     #Rails.cache.write("total", users.length)
+    to_ids = []
+    user_vars = []
 
     users.each do |user|
-      to_ids = []
-      user_vars = []
 
       to = {:email => user[0], :type => "to"}
       to_ids << to
@@ -55,14 +58,23 @@ class EmailController < ApplicationController
 
       send_count = SendMail(from_name, from_email, subject, to_ids, template_id, nil, user_vars)
 
-      mail_sent_count = Rails.cache.fetch("sent") {0}
       mail_sent_count += send_count
 
       #Rails.cache.write("sent", mail_sent_count)
 
     end
 
-    render :text => "#{mail_sent_count} Mails Sent"
+    unless session[:notify_email].blank?
+      mandrill = Mandrill::API.new MANDRILL_API_KEY
+      mandrill.messages.send_raw("Total Emails Sent = #{mail_sent_count}", from_email, from_name, [session[:notify_email]], false)
+    end
+
+    render :json => {:status => "Succes", :sent_count => mail_sent_count, :total_count => users.length}.to_json
+  end
+
+  def update_notify
+    session[:notify_email] = params["notify_email"]
+    render :json => {:status => "Success"}.to_json
   end
 
   # def get_progress
@@ -79,10 +91,9 @@ class EmailController < ApplicationController
 
   def SendMail(from_name, from_email, subject, to_ids, template_id, global_vars, user_vars)
 
-    api_key = Rails.application.config.mandrill_settings[:api_key]
     reply_to = from_email #TODO: Add another field in UI to give a different reply-to email id
 
-    mandrill = Mandrill::API.new api_key
+    mandrill = Mandrill::API.new MANDRILL_API_KEY
     count = 0
 
     begin
@@ -94,7 +105,7 @@ class EmailController < ApplicationController
           "from_name" => from_name,
           "to" => to_ids,
           "headers" => {"Reply-To" => reply_to},
-          "important" => false,
+          "important" => true,
           "track_opens" => true,
           "track_clicks" => true,
           "auto_text" => nil,
@@ -126,16 +137,17 @@ class EmailController < ApplicationController
           #     [{"type"=>"image/png", "name"=>"IMAGECID", "content"=>"ZXhhbXBsZSBmaWxl"}]
       }
 
-      async = false
+      async = false #mandrill API does not allow async to be true if number of emails sent is < 10
       result = mandrill.messages.send_template template_id, template_content, message, async
 
-      count += 1
+      if result.present? && result.length > 0 && (result[0]["status"] == "sent" || result[0]["status"] == "queued")
+        count += 1
+      end
 
     rescue Mandrill::Error => e
       logger.error("Mandrill API Error - #{e.message}")
     end
 
-    return count
-
+    count #return value
   end
 end
