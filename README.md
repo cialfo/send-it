@@ -29,3 +29,4 @@ You can get **api_key** from your mandrill account. Also, make sure you configur
 6. Support attachments
 7. Support tracking (Google analytics)
 8. Test the entire thing
+9. Add login with Google option

@@ -32,7 +32,7 @@ gem 'sdoc', '~> 0.4.0', group: :doc
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
-  #gem 'byebug'
+  #gem 'byebug' #uncomment byebug if not using RubyMine Editor
 
   # Access an IRB console on exception pages or by using <%= console %> in views
   gem 'web-console', '~> 2.0'
@@ -45,4 +45,8 @@ end
 gem 'mandrill-api'
 
 gem 'haml'
+
+gem 'devise'
+gem 'omniauth'
+gem 'omniauth-google-oauth2', '~> 0.2.1'
 
