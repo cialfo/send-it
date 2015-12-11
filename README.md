@@ -16,6 +16,12 @@ MailChimp + Mandrill
 	````
 You can get **api_key** from your mandrill account. Also, make sure you configure your sending domain in mandrill to avoid mail bounce.
 
+######Note
+
+You need to verify the sending email address domain in order to send emails using the mandrill API. See the notice from mandrill below
+
+![mandrill notice](http://i.imgur.com/KkVlg7A.png?1)
+
 ####Thanks to
 1. [http://codepen.io/Albzi/pen/aOwvay](http://codepen.io/Albzi/pen/aOwvay) for Sending animation on processing screen
 
