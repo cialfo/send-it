@@ -3,8 +3,7 @@ MailChimp + Mandrill
 
 ####Set up
 
-1. Configure mandrill_settings in <environment>.rb in config folder     
-
+1. Configure mandrill_settings in <environment>.rb in config folder
   
     ````
     config.mandrill_settings = {
@@ -28,8 +27,8 @@ You need to verify the sending email address domain in order to send emails usin
 ####To Do
 
 1. ~~Proper validations on page~~
-2. Asynchronous update on page while sending email in background
-3. ~~Background notify via email once all emails are sent (useful when sending 1000s of emails)~~
+2. Use SideKiq for background processing
+3. Use Web socket to report status to the client
 4. Write unit tests
 5. Clean up code
 6. Support attachments

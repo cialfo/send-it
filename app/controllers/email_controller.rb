@@ -21,7 +21,6 @@ class EmailController < ApplicationController
     from_name = data_params["from_name"]
     from_email = data_params["from_email"]
     template_id = data_params["template_id"]
-    subject = data_params["subject"]
     session[:notify_email] = data_params["notify_email"]
 
     users = []
@@ -41,26 +40,27 @@ class EmailController < ApplicationController
       end
     end
 
-    #Rails.cache.write("total", users.length)
-    to_ids = []
-    user_vars = []
-
     users.each do |user|
 
+      subject = data_params["subject"]
+      user_vars = []
+      to_ids = []
       to = {:email => user[0], :type => "to"}
       to_ids << to
 
       vars = []
       for i in 1...columns.length
         vars << {:name => columns[i] , :content => user[i]}
+        unless user[i].blank?
+          subject = subject.gsub("[[#{columns[i]}]]", user[i])
+        end
       end
+
       user_vars << {:rcpt => user[0], :vars => vars}
 
       send_count = SendMail(from_name, from_email, subject, to_ids, template_id, nil, user_vars)
 
       mail_sent_count += send_count
-
-      #Rails.cache.write("sent", mail_sent_count)
 
     end
 
@@ -76,12 +76,6 @@ class EmailController < ApplicationController
     session[:notify_email] = params["notify_email"]
     render :json => {:status => "Success"}.to_json
   end
-
-  # def get_progress
-  #   total_count = Rails.cache.fetch("total")
-  #   sent_count = Rails.cache.fetch("sent")
-  #   render :json => {:total => total_count, :sent => sent_count}
-  # end
 
   private
 
