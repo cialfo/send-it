@@ -30,15 +30,18 @@ class EmailController < ApplicationController
       render :json => {:status => "Failed", :reason => "From Email id is blank"} and return
     elsif template_id.blank?
       render :json => {:status => "Failed", :reason => "Template Id is missing. Please get the template id from Mandrill"} and return
+    elsif !csv_file || csv_file.closed?
+      render :json => {:status => "Failed", :reason => "Could not open CSV file."} and return
     end
 
-    CSV.foreach(csv_file).each do |row|
+    CSV.foreach(csv_file) do |row|
       if columns.length > 0
         users << row
       else
         columns.push(*row)
       end
     end
+    csv_file.close if csv_file && !csv_file.closed?
 
     users.each do |user|
 
@@ -91,7 +94,6 @@ class EmailController < ApplicationController
     count = 0
 
     begin
-      template_id = template_id
       template_content = [{"name" => "example name", "content" => "example content"}] #since we are using mailchimp template, this can have dummy values. Not used actually
       message = {
           "subject"=> subject,
