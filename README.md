@@ -3,17 +3,13 @@ MailChimp + Mandrill
 
 ####Set up
 
-1. Configure mandrill_settings in <environment>.rb in config folder
-  
-    ````
-    config.mandrill_settings = {
-    	:api_key => "X",
-      	:from_email => "from@example.com",
-      	:reply_to => "reply@example.com",
-      	:from_name => "Sender Name",
-  	}
-	````
-You can get **api_key** from your mandrill account. Also, make sure you configure your sending domain in mandrill to avoid mail bounce.
+1. Before you run the server, add an environmental variable with your Mandrill API Key
+
+  ```bash
+  $ export MANDRILL_API_KEY=<your-api-key>
+
+	```
+You can get **your-api-key** from your mandrill account. Also, make sure you configure your sending domain in mandrill to avoid mail bounce.
 
 ######Note
 
