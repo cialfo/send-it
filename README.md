@@ -1,26 +1,25 @@
 MailChimp + Mandrill
-===
+---
 
-####Set up
+### Set up
 
 1. Before you run the server, add an environmental variable with your Mandrill API Key
 
-  ```bash
-  $ export MANDRILL_API_KEY=<your-api-key>
+```bash
+$ export MANDRILL_API_KEY=<your-api-key>
+```
 
-	```
-You can get **your-api-key** from your mandrill account. Also, make sure you configure your sending domain in mandrill to avoid mail bounce.
+You can get <your-api-key> from your mandrill account. Also, make sure you configure your sending domain in mandrill to avoid mail bounce.
 
-######Note
-
-You need to verify the sending email address domain in order to send emails using the mandrill API. See the notice from mandrill below
+> **Note:**
+> You need to verify the sending email address domain in order to send emails using the mandrill API. See the notice from mandrill below
 
 ![mandrill notice](http://i.imgur.com/KkVlg7A.png?1)
 
-####Thanks to
-1. [http://codepen.io/Albzi/pen/aOwvay](http://codepen.io/Albzi/pen/aOwvay) for Sending animation on processing screen
+### Credits
+1. [codepen.io/Albzi/pen/aOwvay](http://codepen.io/Albzi/pen/aOwvay) for sending animation on processing screen
 
-####To Do
+### To Do
 
 1. ~~Proper validations on page~~
 2. Use SideKiq for background processing
